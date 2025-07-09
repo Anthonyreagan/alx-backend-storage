@@ -1,19 +1,12 @@
 #!/usr/bin/env python3
-""" Main file """
+""" Testing get_page """
+from web import get_page
+import time
 
-Cache = __import__('exercise').Cache
+url = "http://slowwly.robertomurray.co.uk/delay/3000/url/http://example.com"
 
-cache = Cache()
+print(get_page(url))  # First call, slow
+print(get_page(url))  # Cached, fast
 
-s1 = cache.store("first")
-print(s1)
-s2 = cache.store("secont")
-print(s2)
-s3 = cache.store("third")
-print(s3)
-
-inputs = cache._redis.lrange(f"{cache.store.__qualname__}:inputs", 0, -1)
-outputs = cache._redis.lrange(f"{cache.store.__qualname__}:outputs", 0, -1)
-
-print("inputs: {}".format(inputs))
-print("outputs: {}".format(outputs))
+time.sleep(10)        # Wait for cache to expire
+print(get_page(url))  # Slow again after cache expiration
