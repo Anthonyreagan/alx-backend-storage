@@ -1,0 +1,31 @@
+# Python virtual environment directories
+# These are typically created by tools like venv, virtualenv, or Poetry.
+
+# Standard virtual environment names (most common)
+.env/
+venv/
+env/
+
+# More specific common names you might encounter
+.venv/      # Often used by Poetry
+.virtualenvs/ # Sometimes used by tools like virtualenvwrapper
+
+# Other possible locations/names for virtual environments or related files
+# These are less common but good to be aware of
+__pypackages__/ # PEP 582, experimental
+# This might also be a directory inside your project where a virtual env lives, e.g.:
+# myproject_env/
+
+# If you are using pipenv, you might also want to ignore these:
+# .direnv/ # Directory where pipenv stores some internal files
+# Pipfile.lock # Uncomment this line if you want each developer to resolve their own dependencies.
+             # Generally, it's recommended to commit Pipfile.lock to ensure reproducible builds.
+             # So, keep this line commented out unless you have a specific reason not to.
+
+# If you use a tool that automatically creates a virtual env based on project name:
+# For example, if your project is 'my_app' and a venv is 'my_app-xyz':
+# my_app-*/
+
+# General ignore for common build/temp files often found near virtual envs:
+*.pyc
+__pycache__/
