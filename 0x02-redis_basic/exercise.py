@@ -84,16 +84,27 @@ class Cache:
         return self.get(key, fn=int)
 
 
-if __name__ == "__main__":
-    cache = Cache()
+def replay(method: Callable) -> None:
+    """Display the history of calls of a particular function"""
+    r = redis.Redis()
+    method_name = method.__qualname__
+    input_key = f"{method_name}:inputs"
+    output_key = f"{method_name}:outputs"
 
-    TEST_CASES = {
-        b"foo": None,
-        123: int,
-        "bar": lambda d: d.decode("utf-8")
-    }
+    # Get number of calls
+    count = r.get(method_name)
+    try:
+        count = int(count.decode("utf-8")) if count else 0
+    except Exception:
+        count = 0
 
-    for value, fn in TEST_CASES.items():
-        key = cache.store(value)
-        assert cache.get(key, fn=fn) == value
-    print("All test cases passed!")
+    print(f"{method_name} was called {count} times:")
+
+    # Retrieve inputs and outputs
+    inputs = r.lrange(input_key, 0, -1)
+    outputs = r.lrange(output_key, 0, -1)
+
+    for i, o in zip(inputs, outputs):
+        input_str = i.decode("utf-8")
+        output_str = o.decode("utf-8")
+        print(f"{method_name}(*{input_str}) -> {output_str}")
