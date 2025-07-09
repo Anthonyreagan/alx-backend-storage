@@ -3,6 +3,18 @@
 import redis
 import uuid
 from typing import Union, Callable, Optional
+from functools import wraps
+
+
+def count_calls(method: Callable) -> Callable:
+    """Decorator to count how many times a method is called"""
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        # Increment the Redis counter using the method's qualified name
+        self._redis.incr(method.__qualname__)
+        return method(self, *args, **kwargs)
+    return wrapper
+
 
 
 class Cache:
@@ -11,6 +23,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         Store data in Redis with a random key
@@ -48,3 +61,18 @@ class Cache:
     def get_int(self, key: str) -> Optional[int]:
         """Retrieve integer value from Redis"""
         return self.get(key, fn=int)
+
+
+if __name__ == "__main__":
+    cache = Cache()
+
+    TEST_CASES = {
+        b"foo": None,
+        123: int,
+        "bar": lambda d: d.decode("utf-8")
+    }
+
+    for value, fn in TEST_CASES.items():
+        key = cache.store(value)
+        assert cache.get(key, fn=fn) == value
+    print("All test cases passed!")
