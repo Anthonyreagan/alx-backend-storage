@@ -6,6 +6,26 @@ from typing import Union, Callable, Optional
 from functools import wraps
 
 
+def call_history(method: Callable) -> Callable:
+    """Decorator to store history of inputs and outputs for a method"""
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        key_inputs = method.__qualname__ + ":inputs"
+        key_outputs = method.__qualname__ + ":outputs"
+
+        # Store input arguments as string
+        self._redis.rpush(key_inputs, str(args))
+
+        # Call original method and get result
+        result = method(self, *args, **kwargs)
+
+        # Store output result
+        self._redis.rpush(key_outputs, result)
+
+        return result
+    return wrapper
+
+
 def count_calls(method: Callable) -> Callable:
     """Decorator to count how many times a method is called"""
     @wraps(method)
@@ -24,6 +44,7 @@ class Cache:
         self._redis.flushdb()
 
     @count_calls
+    @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         Store data in Redis with a random key
